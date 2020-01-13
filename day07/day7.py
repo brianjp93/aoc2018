@@ -27,12 +27,34 @@ class Assemble:
 
     def draw(self):
         plt.subplot()
-        nx.draw(self.g, with_labels=True, font_weight='bold')
+        # nx.draw(self.g, with_labels=True, font_weight='bold')
+        nx.draw_shell(self.g, nlist=['ABCDEFGHIJKLM', 'NOPQRSTUVWXYZ'], with_labels=True, font_weight='bold')
         plt.show()
+
+    def get_order(self):
+        order = []
+        allowed = []
+        added = set()
+        for node in self.g.nodes:
+            in_edges = self.g.in_edges(node)
+            if len(in_edges) == 0:
+                allowed.append(node)
+
+        while allowed:
+            allowed.sort()
+            node = allowed.pop(0)
+            order.append(node)
+            for edge in self.g.out_edges(node):
+                new_node = edge[1]
+                if new_node not in added:
+                    allowed.append(new_node)
+                    added.add(new_node)
+        return order
 
 if __name__ == '__main__':
     a = Assemble(data_path)
-    # print(a.g.edges)
     # a.draw()
-    
+    order = a.get_order()
+    order_str = ''.join(order)
+    print(f'Order: {order_str}')
 
