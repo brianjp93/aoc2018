@@ -9,6 +9,7 @@ class Nav:
     def __init__(self, data):
         self.data = data
         self.tree = {}
+        self.values = {}
 
     def process_node(self, i, name=None):
         """Process nodes recursively and build tree.
@@ -47,12 +48,30 @@ class Nav:
         if not self.tree: self.process_node(0, name='root')
         return sum(sum(data['meta']) for data in self.tree.values())
 
+    def find_value(self, node):
+        if node in self.values:
+            return self.values[node]
+
+        if not self.tree: self.process_node(0, name='root')
+        children = self.tree[node]['children']
+        meta = self.tree[node]['meta']
+        if len(children) == 0:
+            value = sum(meta)
+            self.values[node] = value
+            return sum(meta)
+        else:
+            clen = len(children)
+            return sum(self.find_value(children[x-1]) if x in range(1, clen+1) else 0 for x in meta)
+
 if __name__ == '__main__':
     with open(dpath, 'r') as f:
         data = [int(x) for x in f.read().strip().split()]
         tdata = [int(x) for x in '2 3 0 3 10 11 12 1 1 0 1 99 2 1 1 2'.split()]
         nav = Nav(data)
+        # nav = Nav(tdata)
         meta_sum = nav.sum_meta()
         # print(nav.tree)
         print(f'Meta Sum: {meta_sum}')
+        val = nav.find_value('root')
+        print(f'A Value: {val}')
 

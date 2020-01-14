@@ -8,6 +8,10 @@ import matplotlib.pyplot as plt
 
 cwd = pathlib.Path(__file__).parent.absolute()
 data_path = pathlib.PurePath(cwd, 'data')
+tdata_path = pathlib.PurePath(cwd, 'test')
+
+
+ALPHA = 'abcdefghijklmnopqrstuvwxyz'.upper()
 
 
 class Assemble:
@@ -19,7 +23,7 @@ class Assemble:
         g = nx.DiGraph()
         pattern = r'Step ([A-Z]).*step ([A-Z])'
         prog = re.compile(pattern)
-        with open(data_path, 'r') as f:
+        with open(fname, 'r') as f:
             for line in f:
                 r = prog.search(line)
                 groups = r.groups()
@@ -33,29 +37,34 @@ class Assemble:
         plt.show()
 
     def get_order(self):
+        g = self.g.copy()
         order = []
-        allowed = []
-        added = set()
-        for node in self.g.nodes:
-            in_edges = self.g.in_edges(node)
-            if len(in_edges) == 0:
-                allowed.append(node)
-
-        while allowed:
+        need = set(g.nodes)
+        while need:
+            allowed = []
+            for node in need:
+                in_edges = g.in_edges(node)
+                if len(in_edges) == 0:
+                    allowed.append(node)
             allowed.sort()
-            node = allowed.pop(0)
-            order.append(node)
-            for edge in self.g.out_edges(node):
-                new_node = edge[1]
-                if new_node not in added:
-                    allowed.append(new_node)
-                    added.add(new_node)
+            newnode = allowed.pop(0)
+            order.append(newnode)
+            need.remove(newnode)
+            g.remove_node(newnode)
         return order
 
+    def ttf(self, l):
+        return 60 + ALPHA.index(l) + 1
+
+
 if __name__ == '__main__':
+    # a = Assemble(tdata_path)
+    # print(tdata_path)
+    # print(a.g.nodes)
     a = Assemble(data_path)
     # a.draw()
     order = a.get_order()
     order_str = ''.join(order)
     print(f'Order: {order_str}')
+
 
