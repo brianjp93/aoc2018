@@ -28,4 +28,4 @@ C, which has 1 child node (D) and 1 metadata entry (2).
 D, which has 0 child nodes and 1 metadata entry (99).
 The first check done on the license file is to simply add up all of the metadata entries. In this example, that sum is 1+1+2+10+11+12+2+99=138.
 
-What is the sum of all metadata entries?t
+What is the sum of all metadata entries?

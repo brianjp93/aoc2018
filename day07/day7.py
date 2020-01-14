@@ -9,6 +9,7 @@ import matplotlib.pyplot as plt
 cwd = pathlib.Path(__file__).parent.absolute()
 data_path = pathlib.PurePath(cwd, 'data')
 
+
 class Assemble:
     def __init__(self, fname):
         self.g = self.get_data(fname)
