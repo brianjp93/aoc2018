@@ -1007,9 +1007,7 @@ while True:
     for n in data.split('\n'):
         if n:
             n = int(n)
-            # print(n)
             total += n
-            print(total)
             if total in nset:
                 print(f'{total} already in set!')
                 exit()

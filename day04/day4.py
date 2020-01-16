@@ -1,12 +1,15 @@
 """day4.py
 """
 import re
+import pathlib
 from datetime import datetime, timedelta
 from collections import defaultdict
 
+cwd = pathlib.Path(__file__).parent.absolute()
+data = pathlib.PurePath(cwd, 'data')
 
 if __name__ == '__main__':
-    with open('data', 'r') as f:
+    with open(data, 'r') as f:
         d = f.read().splitlines()
         d.sort(key=lambda x: x.split(']')[0])
         pattern = re.compile('([0-9]+)-([0-9]+)-([0-9]+) ([0-9]+):([0-9]+)')
@@ -15,7 +18,6 @@ if __name__ == '__main__':
             s = pattern.search(event)
             year, month, day, hour, minute = s.groups()
             dt = datetime(year=int(year), month=int(month), day=int(day), hour=int(hour), minute=int(minute))
-            # print(dt)
             if 'Guard' in event:
                 guard_id = re.search('#([0-9]+)', event).groups()[0]
                 if guard_id not in sleeptime:
@@ -29,14 +31,10 @@ if __name__ == '__main__':
                     cur = cur + timedelta(minutes=1)
 
         guard_id = max(sleeptime, key=lambda x: len(sleeptime[x]))
-        # print(guard_id)
-        # print(sleeptime[guard_id])
         most_slept_time = defaultdict(int)
         for val in sleeptime[guard_id]:
             most_slept_time[val.minute] += 1
         minute = max(most_slept_time, key=lambda x: most_slept_time[x])
-        # print(minute)
-        # print(most_slept_time[minute])
         part1 = int(guard_id) * int(minute)
         print(f'Part 1: {part1}')
 

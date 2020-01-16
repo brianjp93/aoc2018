@@ -255,12 +255,9 @@ ymdrchgpvwfloiuktanxzjcqvs
 
 twos = 0
 threes = 0
-# print(dat)
-
 for line in dat:
     lets = set(l for l in line)
-    count_twos = False
-    count_threes = False
+    count_twos = count_threes = False
     for l in lets:
         count = line.count(l)
         if count == 2:

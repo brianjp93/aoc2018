@@ -1287,7 +1287,6 @@ for line in dat:
     coords, dims = rest.split(':')
     x, y = tuple(map(int, coords.split(',')))
     xlen, ylen = tuple(map(int, dims.split('x')))
-    # print((x, y), (xlen, ylen))
 
     is_valid = True
     for nx in range(x, x+xlen):
@@ -1295,7 +1294,6 @@ for line in dat:
             if claims[(nx, ny)] > 1:
                 is_valid = False
         if not is_valid:
-            # print(f'{n} is not valid')
             break
 
     if is_valid:
