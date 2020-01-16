@@ -9,7 +9,7 @@ class Chronal:
         self.serial = serial
         self.grid = {}
         self.fill_grid(self.GRIDSIZE, self.GRIDSIZE)
-        self.power_grid = {}
+        self.powers = {}
 
     def power(self, x, y):
         rack_id = x + 10
@@ -41,7 +41,6 @@ class Chronal:
                     largest = total
                     largest_coord = (x, y)
         return largest_coord, largest
-
 
 
 if __name__ == '__main__':
