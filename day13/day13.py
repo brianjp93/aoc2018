@@ -5,6 +5,7 @@ import pathlib
 cwd = pathlib.Path(__file__).parent.absolute()
 data = pathlib.PurePath(cwd, 'data')
 test = pathlib.PurePath(cwd, 'test')
+test2 = pathlib.PurePath(cwd, 'test2')
 
 
 class MineCart:
@@ -82,10 +83,10 @@ class MineCart:
                     elif ch in '^v':
                         self.set(x, y, '|')
 
-    def next(self):
+    def next(self, remove=False):
         keys = sorted(self.carts.keys(), key=lambda x: (x[1], x[0]))
         for coord in keys:
-            for i, (cart, turn_count) in enumerate(self.carts[coord]):
+            for i, (cart, turn_count) in enumerate(self.carts.get(coord, [])):
                 new_coord = tuple(a+b for a, b in zip(coord, self.directions[cart]))
                 new_cart, new_turn_count = self.next_cart(cart, self.get(*new_coord), turn_count)
                 self.carts[coord].pop(i)
@@ -93,8 +94,11 @@ class MineCart:
                     del self.carts[coord]
                 self.carts[new_coord] = self.carts.get(new_coord, []) + [(new_cart, new_turn_count)]
                 if len(self.carts[new_coord]) > 1:
-                    print(f'Found collision: {new_coord}')
-                    return True
+                    if remove:
+                        del self.carts[new_coord]
+                        break
+                    else:
+                        return new_coord
         return False
 
     def next_until_collision(self):
@@ -103,6 +107,11 @@ class MineCart:
             # print(self.draw())
             # input()
             collision = self.next()
+        return collision
+
+    def next_until_one(self):
+        while len(self.carts) > 1:
+            self.next(remove=True)
 
     def draw(self):
         out = []
@@ -121,10 +130,11 @@ class MineCart:
 
 
 if __name__ == '__main__':
-    mctest = MineCart(test)
-    mctest.next_until_collision()
-
+    mc = MineCart(data)
+    coord = mc.next_until_collision()
+    print(f'Collision at {coord}')
 
     mc = MineCart(data)
-    mc.next_until_collision()
+    mc.next_until_one()
+    print(f'Last cart at: {list(mc.carts.keys())[0]}')
 
