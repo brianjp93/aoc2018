@@ -45,6 +45,11 @@ class Ground:
             full.append(''.join(line))
         return '\n'.join(full)
 
+    def fill(self, x=500):
+        q = [(x, 0)]
+        WATER = '*'
+
+
 
 
 if __name__ == '__main__':
