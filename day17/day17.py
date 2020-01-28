@@ -6,6 +6,7 @@ dpath = pathlib.PurePath(cwd, 'data')
 tpath = pathlib.PurePath(cwd, 'test')
 
 
+FALLINGWATER = '|'
 WATER = '~'
 CLAY = '#'
 OPEN = ' '
@@ -62,49 +63,60 @@ class Ground:
                     break
                 else:
                     coord = (coord[0] + dx, coord[1])
-            # coord = (coord[0] - dx, coord[1])
             if self.m.get(coord, OPEN) == CLAY:
                 out.append([(coord[0]-dx, coord[1]), False])
         return out
 
+    def fill_up(self, coord):
+        out = []
+        left_is_open = right_is_open = False
+        while not left_is_open and not right_is_open:
+            (left, left_is_open), (right, right_is_open) = self.find_clay(coord)
+            fill_with = FALLINGWATER if left_is_open or right_is_open else WATER
+            for x in range(left[0], right[0]+1):
+                self.m[(x, left[1])] = fill_with
+            coord = (coord[0], coord[1]-1)
+        for x in range(left[0], right[0]+1):
+            self.m[(x, left[1])] = FALLINGWATER
+        if left_is_open:
+            out.append(left)
+        if right_is_open:
+            out.append(right)
+        return out
+
+    def fill_down(self, coord):
+        while self.m.get(coord, OPEN) != CLAY:
+            self.m[coord] = FALLINGWATER
+            last_coord = coord
+            coord = (coord[0], coord[1]+1)
+            if coord[1] > self.rangey[1]:
+                return None
+            if self.m.get(coord, OPEN) in (WATER, FALLINGWATER):
+                (left, left_is_open), (right, right_is_open) = self.find_clay(coord)
+                if left_is_open or right_is_open:
+                    return None
+        return last_coord
+
     def fill(self, x=500):
         q = [(x, 0)]
         while q:
-            coord = q.pop()
-            is_stop = False
-            while self.m.get(coord, OPEN) != CLAY:
-                if coord[1] > self.rangey[1]:
-                    is_stop = True
-                    break
-                self.m[coord] = WATER
-                coord = (coord[0], coord[1] + 1)
-                if self.m.get(coord, OPEN) == WATER:
-                    coord = (coord[0], coord[1] + 1)
-                    break
-            coord = (coord[0], coord[1] - 1)
-            if is_stop:
-                continue
+            coord = q.pop(0)
+            coord = self.fill_down(coord)
+            if coord is not None:
+                new_coords = self.fill_up(coord)
+                q += new_coords
 
-            left_is_open = False
-            right_is_open = False
-            while left_is_open == False and right_is_open == False:
-                left, right = self.find_clay(coord)
-                left_is_open = left[1]
-                right_is_open = right[1]
-                for x in range(left[0][0], right[0][0]+1):
-                    self.m[(x, left[0][1])] = WATER
-                coord = (coord[0], coord[1]-1)
-            if left_is_open:
-                q.append(tuple(left[0]))
-            if right_is_open:
-                q.append(tuple(right[0]))
-            # print(self.draw())
-            # input()
+    def count_water(self):
+        return sum(1 if val in (WATER, FALLINGWATER) and coord[1] >= self.rangey[0] else 0 for coord, val in self.m.items())
+
+    def count_after_dry(self):
+        return sum(1 if val == WATER and coord[1] >= self.rangey[0] else 0 for coord, val in self.m.items())
 
 
 if __name__ == '__main__':
     g = Ground(dpath)
-    # g = Ground(tpath)
     g.fill()
-    print(g.draw())
+    # print(g.draw())
+    print(f'Part 1: {g.count_water()}')
+    print(f'Part 2: {g.count_after_dry()}')
 
