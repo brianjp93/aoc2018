@@ -115,6 +115,13 @@ if __name__ == '__main__':
     resources = count[TREE] * count[LUMBERYARD]
     print(f'Part 1: {resources}')
 
+    l = Lumber(dpath)
+    while True:
+        print()
+        print(l.draw())
+        l.next()
+
+
     lumber = Lumber(dpath)
     m = lumber.go(1000000000)
     count = lumber.count(m)
