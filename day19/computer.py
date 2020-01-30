@@ -24,9 +24,10 @@ class Computer:
 
     def run_until_finished(self):
         while self.get_pointer() >= 0 and self.get_pointer() < len(self.instructions):
-            # print(self.register)
-            # print(self.instructions[self.get_pointer()])
-            # input()
+            print(self.get_pointer())
+            print(self.register)
+            print(self.instructions[self.get_pointer()])
+            input()
             self.run()
 
     def get_pointer(self):

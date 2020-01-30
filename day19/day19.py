@@ -18,12 +18,19 @@ if __name__ == '__main__':
                 line = [line[0]] + list(map(int, line[1:]))
                 instructions.append(line)
 
-        # computer = Computer(instructions=list(instructions), pointer=pointer)
+        computer = Computer(instructions=list(instructions), pointer=pointer)
+        computer.run_until_finished()
+        print(computer.register)
+
+        # computer = Computer(instructions=list(instructions), pointer=pointer, register=[1, 0, 0, 0, 0, 0])
         # computer.run_until_finished()
         # print(computer.register)
 
-        # computer = Computer(instructions=list(instructions), pointer=pointer, register=[0, 1, 0, 10551263, 6, 10551264])
-        computer = Computer(instructions=list(instructions), pointer=pointer, register=[1, 0, 0, 0, 0, 0])
-        computer.run_until_finished()
-        print(computer.register)
+        # Part 2 is summing all the divisors of 10551264
+        out = 0
+        endnum = 10551264
+        for i in range(1, endnum+1):
+            if endnum % i == 0:
+                out += i
+        print(out)
 
