@@ -4,9 +4,11 @@ import pathlib
 
 cwd = pathlib.Path(__file__).parent.absolute()
 dpath = pathlib.PurePath(cwd, 'data')
-test1 = '^ENWWW(NEEE|SSE(EE|N))$'
-test2 = '^ENNWSWW(NEWS|)SSSEEN(WNSE|)EE(SWEN|)NNN$'
-test3 = '^ESSWWN(E|NNENN(EESS(WNSE|)SSS|WWWSSSSE(SW|NNNE)))$'
+
+
+DOORS = '|-'
+WALL = '#'
+OPEN = '.'
 
 
 class Space:
@@ -25,7 +27,7 @@ class Space:
     def process(self, coord=tuple((0, 0)), data=None):
         if data is None:
             data = self.data
-            self.m[coord] = '.'
+            self.m[coord] = OPEN
         walls = {'N': '-', 'S': '-', 'E': '|', 'W': '|'}
         coord = tuple(coord)
         init_coord = tuple(coord)
@@ -36,7 +38,7 @@ class Space:
                 coord = tuple(a+b for a, b in zip(coord, self.dirs[val]))
                 self.m[coord] = walls[val]
                 coord = tuple(a+b for a, b in zip(coord, self.dirs[val]))
-                self.m[coord] = '.'
+                self.m[coord] = OPEN
             elif val == '(':
                 endindex = self.find_closing(i, data)
                 coord = self.process(coord, data[i+1: endindex])
@@ -51,8 +53,8 @@ class Space:
         for coord in keys:
             for d in list(self.dirs.values()) + [(1, 1), (-1, -1), (1, -1), (-1, 1)]:
                 nc = tuple(a+b for a, b in zip(coord, d))
-                if self.m.get(nc, '#') not in '.|-':
-                    self.m[nc] = '#'
+                if self.m.get(nc, WALL) not in '.|-':
+                    self.m[nc] = WALL
 
     def get_range(self):
         minx = min(key[0] for key in self.m.keys())
@@ -89,19 +91,29 @@ class Space:
         return i-1
 
     def find_path_lengths(self, coord=tuple((0, 0))):
+        paths = {}
         q = [(coord, 0)]
         while q:
-            coord, dist = q.pop()
-            for d in self.dirs.values():
-                pass
+            coord, dist = q.pop(0)
+            if dist < paths.get(coord, float('inf')):
+                paths[coord] = dist
+                for d in self.dirs.values():
+                    ncoord = tuple(a+b for a, b in zip(coord, d))
+                    if self.m.get(ncoord, WALL) in DOORS:
+                        ncoord = tuple(a+b for a, b in zip(ncoord, d))
+                        q.append((ncoord, dist + 1))
+        return paths
+
 
 if __name__ == '__main__':
-    # s = Space(test2)
-    # print(s.draw())
     with open(dpath, 'r') as f:
         reg = f.read().strip()
-        # print(reg)
         s = Space(reg)
-        print(s.draw())
-        # print(s.m)
+        # print(s.draw())
+        paths = s.find_path_lengths()
+        max_dist = max(list(paths.values()))
+        print(f'Part 1: {max_dist}')
+
+        gt_1000 = len([x for x in paths.values() if x >= 1000])
+        print(f'Part 2: {gt_1000}')
 
