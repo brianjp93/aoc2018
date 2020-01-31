@@ -41,3 +41,4 @@ if __name__ == '__main__':
             instr_index = computer.get_pointer()
 
         print(output)
+
