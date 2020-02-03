@@ -13,12 +13,11 @@ COLD = 'cold'
 SLASHING = 'slashing'
 BLUDGEONING = 'bludgeoning'
 FIRE = 'fire'
-WEAK_AGAINST = {
-    
-}
+
 
 class Army:
-    def __init__(self, count, hp, weak_to, immune_to, initiative, dmg, dmg_type):
+    def __init__(self, count, hp, weak_to, immune_to, initiative, dmg, dmg_type, label):
+        self.label = label
         self.count = count
         self.hp = hp
         self.weak_to = weak_to
@@ -28,13 +27,18 @@ class Army:
         self.dmg_type = dmg_type
 
     def __repr__(self):
-        return f'Army(count={self.count}, hp={self.hp}, weak_to={self.weak_to}, immune_to={self.immune_to}, initiative={self.initiative}, dmg={self.dmg}, dmg_type={self.dmg_type})'
+        return f'Army(count={self.count}, hp={self.hp}, weak_to={self.weak_to}, immune_to={self.immune_to}, initiative={self.initiative}, dmg={self.dmg}, dmg_type={self.dmg_type}, label={self.label})'
 
     def power(self):
         return self.count * self.dmg
 
     def calculate_damage(self, enemy):
-        pass
+        amount = self.power()
+        if self.dmg_type in enemy.weak_to:
+            amount *= 2
+        elif self.dmg_type in enemy.immune_to:
+            amount = 0
+        return amount
 
     def attack(self, enemy):
         pass
@@ -44,6 +48,10 @@ def get_armies(immune_data, infection_data):
         infection = []
         program = re.compile(re_compile)
         for j, side in enumerate([immune_data, infection_data]):
+            if j == 0:
+                label = 'immune'
+            elif j == 1:
+                label = 'infection'
             for line in side.split('\n'):
                 r = program.match(line)
                 g = r.groups()
@@ -54,12 +62,35 @@ def get_armies(immune_data, infection_data):
                         immune_to = tuple(x.strip() for x in g[i+1].split(','))
                     elif g[i] == 'weak':
                         weak_to = tuple(x.strip() for x in g[i+1].split(','))
-                a = Army(int(g[0]), int(g[1]), weak_to, immune_to, int(g[8]), int(g[6]), g[7])
+                a = Army(int(g[0]), int(g[1]), weak_to, immune_to, int(g[8]), int(g[6]), g[7], label)
                 if j == 0:
                     immune_system.append(a)
                 elif j == 1:
                     infection.append(a)
         return immune_system, infection
+
+
+def get_attack_order(armies):
+    return sorted(armies, lambda x: (-x.power(), -x.initiative))
+
+
+def acquire_target(army, enemies):
+    chosen = None
+    max_damage = -float('inf')
+    for enemy in enemies:
+        dmg = army.calculate_damage(enemy)
+        if dmg > max_damage:
+            chosen = enemy
+            max_damage = dmg
+        elif dmg == max_damage:
+            if enemy.power() > chosen.power():
+                chosen = enemy
+            elif enemy.power() == chosen.power():
+                if enemy.initiative > chosen.initiative:
+                    chosen = enemy
+    if max_damage == 0:
+        chosen = None
+    return chosen
 
 
 if __name__ == '__main__':
