@@ -73,10 +73,12 @@ def get_target_selection_order(armies):
     return sorted(armies, key=lambda x: (-x.power(), -x.initiative))
 
 
-def acquire_target(army, enemies):
+def acquire_target(army, enemies, ignore=set()):
     chosen = None
     max_damage = -float('inf')
     for enemy in enemies:
+        if enemy in ignore:
+            continue
         dmg = army.calculate_damage(enemy)
         if dmg > max_damage:
             chosen = enemy
@@ -97,7 +99,7 @@ def get_attack_order(armies, groups):
     is_chosen = set()
     for army in armies:
         enemy_group = groups['immune'] if army.label == 'infection' else groups['infection']
-        target = acquire_target(army, enemy_group)
+        target = acquire_target(army, enemy_group, is_chosen)
         if target in is_chosen:
             target = None
         else:
@@ -106,38 +108,65 @@ def get_attack_order(armies, groups):
     targets.sort(key=lambda x: -x[0].initiative)
     return targets
 
+def battle(data, boost=0):
+    immune_data, infection_data = data.split('Infection:')
+    immune_data = immune_data.strip('Immune System:').strip()
+    infection_data = infection_data.strip()
+    immune_system, infection = get_armies(immune_data, infection_data)
+    for army in immune_system:
+        army.dmg += boost
+    army_groups = {
+        'immune': immune_system,
+        'infection': infection
+    }
+    while len(immune_system) > 0 and len(infection) > 0:
+        att_order = get_attack_order(immune_system+infection, army_groups)
+        for army, enemy in att_order:
+            if enemy is not None:
+                old_count = enemy.count
+                army.attack(enemy)
+        for system in [immune_system, infection]:
+            i = 0
+            while i < len(system):
+                army = system[i]
+                if army.count == 0:
+                    del system[i]
+                else:
+                    i += 1
+    if len(immune_system) > 0:
+        winner = 'immune'
+    else:
+        winner = 'infection'
+    return winner, immune_system, infection
+
 
 if __name__ == '__main__':
     with open(dpath, 'r') as f:
-        immune_data, infection_data = f.read().split('Infection:')
-        immune_data = immune_data.strip('Immune System:').strip()
-        infection_data = infection_data.strip()
-        immune_system, infection = get_armies(immune_data, infection_data)
-        army_groups = {
-            'immune': immune_system,
-            'infection': infection
-        }
-
-        while len(immune_system) > 0 and len(infection) > 0:
-            att_order = get_attack_order(immune_system+infection, army_groups)
-            for army, enemy in att_order:
-                if enemy is not None:
-                    old_count = enemy.count
-                    army.attack(enemy)
-                    # print(f'{army.label} {army.count} attacks {enemy.count} killing {old_count-enemy.count}')
-                    # input()
-
-            for system in [immune_system, infection]:
-                i = 0
-                while i < len(system):
-                    army = system[i]
-                    if army.count == 0:
-                        del system[i]
-                    else:
-                        i += 1
-            # print(immune_system)
-            # print(infection)
-
+        data = f.read()
+        winner, immune_system, infection = battle(data)
+        print('Part 1')
+        for army in infection:
+            print(army)
         print(f'Total Infection: {sum(x.count for x in infection)}')
+        print()
+        for army in immune_system:
+            print(army)
         print(f'Total Immune: {sum(x.count for x in immune_system)}')
+
+        print()
+        print('Part 2')
+        boost = 43
+        while True:
+            winner, immune_system, infection = battle(data, boost=boost)
+            if winner == 'immune':
+                break
+            boost += 1
+
+    for army in infection:
+        print(army)
+    print(f'Total Infection: {sum(x.count for x in infection)}')
+    print()
+    for army in immune_system:
+        print(army)
+    print(f'Total Immune: {sum(x.count for x in immune_system)}')
 
